@@ -22,6 +22,7 @@ from django.conf import settings
 
 from . import defaults
 from .utils import get_storage
+from .fields import EmailsListField
 
 
 class MailerMessageManager(models.Manager):
@@ -47,8 +48,8 @@ class MailerMessageManager(models.Manager):
 @python_2_unicode_compatible
 class MailerMessage(models.Model):
     subject = models.CharField(_('Subject'), max_length=250, blank=True)
-    to_address = models.EmailField(_('To'), max_length=250)
-    bcc_address = models.EmailField(_('BCC'), max_length=250, blank=True)
+    to_address = EmailsListField(_('To'), help_text='Emails separated by commas.')
+    bcc_address = EmailsListField(_('BCC'), blank=True, help_text='Emails separated by commas.')
     from_address = models.EmailField(_('From'), max_length=250)
     content = models.TextField(_('Content'), blank=True)
     html_content = models.TextField(_('HTML Content'), blank=True)
@@ -102,15 +103,11 @@ class MailerMessage(models.Model):
 
             subject, from_email, to = self.subject, self.from_address, self.to_address
             text_content = self.content
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            msg = EmailMultiAlternatives(subject, text_content, from_email, to)
             if self.html_content:
                 html_content = self.html_content
                 msg.attach_alternative(html_content, "text/html")
-            if self.bcc_address:
-                if ',' in self.bcc_address:
-                    msg.bcc = [ email.strip() for email in self.bcc_address.split(',') ]
-                else:
-                    msg.bcc = [self.bcc_address, ]
+            msg.bcc = self.bcc_address
 
             # Add any additional attachments
             for attachment in self.attachment_set.all():
