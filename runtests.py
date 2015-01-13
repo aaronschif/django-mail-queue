@@ -6,36 +6,38 @@ import django
 
 DIRNAME = os.path.dirname(__file__)
 
+django_settings = {
+    'DEBUG': True,
+    'DATABASES': {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+        }
+    },
+    'ROOT_URLCONF': 'mailqueue.urls',
+    'INSTALLED_APPS': (
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.admin',
+        'mailqueue',
+    ),
+    'MIDDLEWARE_CLASSES': (
+        'django.middleware.common.CommonMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+    ),
+    'USE_TZ': True
+}
+
 if django.VERSION[1] < 4:
     # If the version is NOT django 4 or greater
     # then remove the TZ setting.
 
-    settings.configure(DEBUG=True,
-                       DATABASES={
-                           'default': {
-                               'ENGINE': 'django.db.backends.sqlite3',
-                               }
-                       },
-                       ROOT_URLCONF='mailqueue.urls',
-                       INSTALLED_APPS=('django.contrib.auth',
-                                       'django.contrib.contenttypes',
-                                       'django.contrib.sessions',
-                                       'django.contrib.admin',
-                                       'mailqueue',))
-else:
-    settings.configure(DEBUG=True,
-                       DATABASES={
-                           'default': {
-                               'ENGINE': 'django.db.backends.sqlite3',
-                               }
-                       },
-                       ROOT_URLCONF='mailqueue.urls',
-                       INSTALLED_APPS=('django.contrib.auth',
-                                       'django.contrib.contenttypes',
-                                       'django.contrib.sessions',
-                                       'django.contrib.admin',
-                                       'mailqueue',),
-                       USE_TZ=True)
+    django_settings.pop('USE_TZ')
+
+settings.configure(**django_settings)
 
 
 try:
